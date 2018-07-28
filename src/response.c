@@ -15,7 +15,6 @@ typedef struct {
     int child_stderr;
     PurpleConvIm *im;
     GPid pid;
-    guint watch_id;
 } Command;
 
 Command *
@@ -27,7 +26,6 @@ valet_command_new (char *args, PurpleConvIm *im) {
     command->child_stderr = -1;
     command->im = im;
     command->pid = -1;
-    command->watch_id = 0; /* unsigned */
     return command;
 }
 

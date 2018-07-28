@@ -96,12 +96,12 @@ static PurpleEventLoopUiOps glib_eventloops = {
  * Callback which receives messages and logs them.
  */
 static void
-figaro_write_conv (PurpleConversation *conv,
-                   const char *who,
-                   const char *alias,
-                   const char *message,
-                   PurpleMessageFlags flags,
-                   time_t mtime) {
+valet_write_conv (PurpleConversation *conv,
+                  const char *who,
+                  const char *alias,
+                  const char *message,
+                  PurpleMessageFlags flags,
+                  time_t mtime) {
     const char *name;
     if (alias && *alias) {
         name = alias;
@@ -118,12 +118,12 @@ figaro_write_conv (PurpleConversation *conv,
             name, message);
 }
 
-static PurpleConversationUiOps figaro_conv_uiops = {
+static PurpleConversationUiOps valet_conv_uiops = {
     NULL,                      /* create_conversation  */
     NULL,                      /* destroy_conversation */
     NULL,                      /* write_chat           */
     NULL,                      /* write_im             */
-    figaro_write_conv,           /* write_conv           */
+    valet_write_conv,           /* write_conv           */
     NULL,                      /* chat_add_users       */
     NULL,                      /* chat_rename_user     */
     NULL,                      /* chat_remove_users    */
@@ -144,14 +144,14 @@ static PurpleConversationUiOps figaro_conv_uiops = {
  * Give libpurple hooks into our (paltry) UI.
  */
 static void
-figaro_ui_init (void) {
-    purple_conversations_set_ui_ops (&figaro_conv_uiops);
+valet_ui_init (void) {
+    purple_conversations_set_ui_ops (&valet_conv_uiops);
 }
 
 static PurpleCoreUiOps null_core_uiops = {
     NULL,
     NULL,
-    figaro_ui_init,
+    valet_ui_init,
     NULL,
 
     /* padding */

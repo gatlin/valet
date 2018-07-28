@@ -19,7 +19,7 @@ typedef struct {
 } Command;
 
 Command *
-figaro_command_new (char *args, PurpleConvIm *im) {
+valet_command_new (char *args, PurpleConvIm *im) {
     Command *command;
     command = g_new0 (Command, 1);
     command->args = g_regex_split_simple("[\\s+]", args, 0, 0);
@@ -32,7 +32,7 @@ figaro_command_new (char *args, PurpleConvIm *im) {
 }
 
 void
-figaro_command_free (Command *command) {
+valet_command_free (Command *command) {
     if (NULL != command->args) {
         g_strfreev (command->args);
     }
@@ -73,7 +73,7 @@ reply (GIOChannel *channel, GIOCondition cond, gpointer data) {
     else { /* ERROR, EOF */
         more_data = FALSE;
         g_io_channel_shutdown (channel, TRUE, NULL);
-        figaro_command_free (command);
+        valet_command_free (command);
     }
 
     return more_data;
@@ -102,7 +102,7 @@ spawn_command (char *buffer, PurpleConvIm *im) {
     GError *error = NULL;
     Command *command;
 
-    command = figaro_command_new (buffer, im);
+    command = valet_command_new (buffer, im);
 
     /* Spawn a new process */
     g_spawn_async_with_pipes (CMD_PATH,
@@ -117,7 +117,7 @@ spawn_command (char *buffer, PurpleConvIm *im) {
     /* Did GLib tell us something went wrong? */
     if (NULL != error) {
         fprintf (stderr, "Spawning child failed: %s\n", error->message);
-        figaro_command_free (command);
+        valet_command_free (command);
         g_error_free (error);
         return;
     }
@@ -125,7 +125,7 @@ spawn_command (char *buffer, PurpleConvIm *im) {
     /* Did GLib lie? */
     if (-1 == command->child_stdout || -1 == command->child_stderr) {
         fprintf (stderr, "Error capturing command output.\n");
-        figaro_command_free (command);
+        valet_command_free (command);
         return;
     }
 

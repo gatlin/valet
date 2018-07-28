@@ -1,5 +1,5 @@
-#ifndef __FIGARO_CHAT_H
-#define __FIGARO_CHAT_H
+#ifndef __VALET_CHAT_H
+#define __VALET_CHAT_H
 
 #include <string.h>
 
@@ -18,4 +18,4 @@
 void
 initialize_libpurple (Credentials *);
 
-#endif /* __FIGARO_CHAT_H */
+#endif /* __VALET_CHAT_H */

@@ -1,5 +1,5 @@
-#ifndef __FIGARO_RESPONSE_H
-#define __FIGARO_RESPONSE_H
+#ifndef __VALET_RESPONSE_H
+#define __VALET_RESPONSE_H
 
 #include "defines.h"
 #include "purple.h"
@@ -9,4 +9,4 @@ void
 received_im(PurpleAccount *, char *, char *, PurpleConversation *,
             PurpleMessageFlags, void *);
 
-#endif /* __FIGARO_RESPONSE_H */
+#endif /* __VALET_RESPONSE_H */

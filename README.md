@@ -30,3 +30,7 @@ Finally - and this is where it gets 🔥 - run
 
     $> bin/valet
     
+license
+---
+
+gplv3 or later you leeches

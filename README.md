@@ -1,7 +1,7 @@
 Valet
 ===
 
-A helper bot inspired by [https://github.com/mhcerri/Autobot](https://github.com/mhcerri/Autobot).
+A helper bot inspired by [https://github.com/mhcerri/Autobot](https://github.com/mhcerri/Autobot). This one supports OMEMO encryption though. 
 
 © 2018- Gatlin Johnson <gatlin@niltag.net>
 

@@ -99,7 +99,7 @@ create_response_channels (Command *command) {
  */
 void
 command_process_watch (GPid pid, int status, gpointer data) {
-    g_debug ("Command process %" G_PID_FORMAT " exited %s\n", pid,
+    g_debug ("Command process %d exited %s\n", pid,
              g_spawn_check_exit_status (status, NULL)
              ? "normally" : "abnormally");
     g_spawn_close_pid (pid);

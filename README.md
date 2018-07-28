@@ -15,35 +15,57 @@ directory.
 When you send Valet a message it will interpret the first word as a command and
 pass the rest as arguments.
 
-Details
+How to build Valet
 ---
 
-Valet uses [libpurple][libpurple] and the [lurch][lurch] plugin internally.
+### Dependencies
+
+On Ubuntu and other Debian systems:
+
+    $> sudo apt install libpurple-dev libglib2.0-dev libmxml-dev libxml2-dev
+    libsqlite3-dev libgcrypt20-dev
+
+### Build lurch
+
+Valet relies on [lurch][lurch] for [OMEMO][omemo] encryption, and so it has been
+added as a sub-module.
+
+    $> git submodule update --init --recursive
+    $> cd thirdparty/lurch
+    $> cd make
+
+### Build Valet
+
+
+    $> make
 
 Configuration
 ---
 
-A sample config file has been provided, but basically it looks like this:
+A sample config file has been provided and it resembles this:
 
 ```
 [credentials]
 username=user@server.tld
 password=ourlittlesecret
 
-[commands]
-dir=/opt/valet/commands
-
-[misc]
-valetdata=/opt/valet/data
-# the location of the OMEMO plugin for libpurple
-lurchdir=etc/plugins
+[valet]
+# paths can be relative or absolute
+commands=etc/commands
+libpurpledata=etc/account
+lurch=thirdparty/lurch/build/lurch.so
 ```
 
-The credentials should be straightforward. The command dir is where you put any
-(and only) those executable files you want Valet to be able to run.
+The credentials should be straightforward.
+
+`commands` is the directory where you will place the executables you want Valet
+to have access to.
 
 **It is strongly recommended that you run Valet as a special user and clamp down
 access to the commands.**
+
+`libpurpledata` is where libpurple should store its data.
+`lurch` is the location of the `lurch` plugin you built. It should be correct by default.
 
 license
 ---
@@ -54,3 +76,4 @@ gplv3 or later you leeches
 [autobot]: https://github.com/mhcerri/Autobot
 [omemo]: https://conversations.im/omemo/
 [lurch]: https://github.com/gkdr/lurch
+[glib]: https://developer.gnome.org/glib/2.56/

@@ -1,9 +1,9 @@
 [credentials]
-username=USER@SERVER.TLD
-password=ourlittlesecret
+username=user@xmppserver.tld
+password=our_little_secret
 
 [valet]
 # paths can be relative or absolute
-commands=path/to/commands
-libpurpledata=purpledata/
-lurch=path/to/lurch/plugin.so
+commands=etc/commands
+libpurpledata=etc/account
+lurch=thirdparty/lurch/build/lurch.so

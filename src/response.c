@@ -14,6 +14,8 @@ typedef struct {
     int child_stdout;
     int child_stderr;
     PurpleConvIm *im;
+    GPid pid;
+    guint watch_id;
 } Command;
 
 Command *
@@ -24,6 +26,8 @@ figaro_command_new (char *args, PurpleConvIm *im) {
     command->child_stdout = -1;
     command->child_stderr = -1;
     command->im = im;
+    command->pid = -1;
+    command->watch_id = 0; /* unsigned */
     return command;
 }
 
@@ -32,6 +36,7 @@ figaro_command_free (Command *command) {
     if (NULL != command->args) {
         g_strfreev (command->args);
     }
+    g_spawn_close_pid (command->pid);
     g_free (command);
 }
 
@@ -42,14 +47,14 @@ static gboolean
 reply (GIOChannel *channel, GIOCondition cond, gpointer data) {
     GIOStatus status;
     GError *error;
-    PurpleConvIm *im;
+    Command *command;
     char *buffer;
     gsize length, term_pos;
     gboolean more_data;
 
     more_data = TRUE;
     error = NULL;
-    im = data;
+    command = data;
     status = g_io_channel_read_line (channel, &buffer, &length, &term_pos,
                                      &error);
 
@@ -57,18 +62,18 @@ reply (GIOChannel *channel, GIOCondition cond, gpointer data) {
         fprintf (stderr, "Error: %s\n", error->message);
         g_error_free (error);
     }
-    switch (status) {
-    case G_IO_STATUS_NORMAL:
-        buffer[strcspn(buffer, "\n")] = 0;
-        purple_conv_im_send (im, buffer);
-        free (buffer);
-        break;
 
-    case G_IO_STATUS_EOF:
+    if (G_IO_STATUS_NORMAL == status) {
+        /* Strip the trailing newline */
+        buffer[strcspn (buffer, "\n")] = 0;
+        purple_conv_im_send (command->im, buffer);
+        free (buffer);
+    }
+
+    else { /* ERROR, EOF */
         more_data = FALSE;
-        break;
-    default:
-        ;
+        g_io_channel_shutdown (channel, TRUE, NULL);
+        figaro_command_free (command);
     }
 
     return more_data;
@@ -79,19 +84,13 @@ reply (GIOChannel *channel, GIOCondition cond, gpointer data) {
  */
 void
 create_response_channels (Command *command) {
-    GIOChannel *out_channel, *err_channel;
+    GIOChannel *out_channel;
 
     out_channel = g_io_channel_unix_new (command->child_stdout);
-    err_channel = g_io_channel_unix_new (command->child_stderr);
 
-    g_io_add_watch_full (out_channel, G_PRIORITY_DEFAULT, G_IO_IN, reply,
-                         command->im, NULL);
-    g_io_add_watch_full (err_channel, G_PRIORITY_DEFAULT, G_IO_IN, reply,
-                         command->im, NULL);
-
-    g_io_channel_unref (out_channel);
-    g_io_channel_unref (err_channel);
-    figaro_command_free (command);
+    g_io_add_watch_full (out_channel, G_PRIORITY_DEFAULT,
+                         G_IO_IN | G_IO_HUP, reply,
+                         command, NULL);
 }
 
 /**
@@ -99,18 +98,23 @@ create_response_channels (Command *command) {
  * Commands are defined as CMD_PATH in defines.h
  */
 void
-spawn_command (Command *command) {
-    GPid child_pid;
+spawn_command (char *buffer, PurpleConvIm *im) {
     GError *error = NULL;
+    Command *command;
 
+    command = figaro_command_new (buffer, im);
+
+    /* Spawn a new process */
     g_spawn_async_with_pipes (CMD_PATH,
                               command->args,
                               NULL, G_SPAWN_DEFAULT,
-                              NULL, NULL, &child_pid, NULL,
+                              NULL, NULL,
+                              &(command->pid), NULL,
                               &(command->child_stdout),
                               &(command->child_stderr),
                               &error);
 
+    /* Did GLib tell us something went wrong? */
     if (NULL != error) {
         fprintf (stderr, "Spawning child failed: %s\n", error->message);
         figaro_command_free (command);
@@ -118,12 +122,14 @@ spawn_command (Command *command) {
         return;
     }
 
+    /* Did GLib lie? */
     if (-1 == command->child_stdout || -1 == command->child_stderr) {
         fprintf (stderr, "Error capturing command output.\n");
         figaro_command_free (command);
         return;
     }
 
+    /* Okay we've started a process let's do it. */
     create_response_channels (command);
 }
 
@@ -154,7 +160,6 @@ received_im(PurpleAccount *account, char *sender, char *buffer,
             void *data)
 {
     PurpleBuddy *buddy;
-    Command *command;
     PurpleConvIm *im;
 
     conv = ensure_conversation (conv, account, sender);
@@ -169,6 +174,5 @@ received_im(PurpleAccount *account, char *sender, char *buffer,
         return;
     }
 
-    command = figaro_command_new (buffer, im);
-    spawn_command (command);
+    spawn_command (buffer, im);
 }

@@ -59,7 +59,7 @@ reply (GIOChannel *channel, GIOCondition cond, gpointer data) {
                                      &error);
 
     if (NULL != error) {
-        fprintf (stderr, "Error: %s\n", error->message);
+        g_warning ("Error: %s\n", error->message);
         g_error_free (error);
     }
 
@@ -116,15 +116,15 @@ spawn_command (char *buffer, PurpleConvIm *im, char *commands_path) {
 
     /* Did GLib tell us something went wrong? */
     if (NULL != error) {
-        fprintf (stderr, "Spawning child failed: %s\n", error->message);
-        valet_command_free (command);
+        g_warning ("Spawning child failed: %s\n", error->message);
         g_error_free (error);
+        valet_command_free (command);
         return;
     }
 
     /* Did GLib lie? */
     if (-1 == command->child_stdout || -1 == command->child_stderr) {
-        fprintf (stderr, "Error capturing command output.\n");
+        g_warning ("Error capturing command output.\n");
         valet_command_free (command);
         return;
     }
@@ -172,7 +172,7 @@ received_im(PurpleAccount *account, char *sender, char *buffer,
 
     buddy = purple_find_buddy (account, sender);
     if (NULL == buddy) {
-        printf ("Received message from unknown sender: %s\n", sender);
+        g_message ("Received message from unknown sender: %s\n", sender);
         return;
     }
 

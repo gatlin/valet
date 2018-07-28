@@ -38,7 +38,7 @@ main (int argc, char *argv[]) {
     context = g_option_context_new ("- a helpful xmpp bot");
     g_option_context_add_main_entries (context, options, NULL);
     if (!g_option_context_parse (context, &argc, &argv, &error)) {
-        fprintf (stderr, "Error parsing arguments: %s\n", error->message);
+        g_warning ("Error parsing arguments: %s\n", error->message);
         g_error_free (error);
         error = NULL;
     }
@@ -49,8 +49,7 @@ main (int argc, char *argv[]) {
 
     config = get_config (config_path, &error);
     if (NULL == config) {
-        fprintf (stderr, "Error: cannot find configuration file.\n");
-        return -1;
+        g_error ("Error: cannot find configuration file.\n");
     }
 
     initialize_libpurple (config);

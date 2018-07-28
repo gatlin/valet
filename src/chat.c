@@ -114,9 +114,9 @@ valet_write_conv (PurpleConversation *conv,
         name = NULL;
     }
 
-    printf ("(%s) %s %s: %s\n", purple_conversation_get_name (conv),
-            purple_utf8_strftime ("(%H:%M:%S)", localtime (&mtime)),
-            name, message);
+    g_debug ("(%s) %s %s: %s\n", purple_conversation_get_name (conv),
+             purple_utf8_strftime ("(%H:%M:%S)", localtime (&mtime)),
+             name, message);
 }
 
 static PurpleConversationUiOps valet_conv_uiops = {
@@ -192,10 +192,9 @@ init_libpurple (char *purple_data_path) {
      * is used by stuff that depends on this ui, for example the ui-specific plugins. */
     if (!purple_core_init (UI_ID)) {
         /* Initializing the core failed. Terminate. */
-        fprintf (stderr,
-                 "libpurple initialization failed. Dumping core.\n"
+        g_error ("libpurple initialization failed. Dumping core.\n"
                  "Please report this!\n");
-        abort ();
+        /* Goodbye! */
     }
 
     /* Create and load the buddylist. */
@@ -220,8 +219,8 @@ init_libpurple (char *purple_data_path) {
 static void
 signed_on(PurpleConnection *gc, gpointer null) {
     PurpleAccount *account = purple_connection_get_account (gc);
-    printf ("Account connected: %s %s\n",
-            account->username, account->protocol_id);
+    g_debug ("Account connected: %s %s\n",
+             account->username, account->protocol_id);
 }
 
 static void
@@ -247,14 +246,14 @@ initialize_omemo (char *lurch_path) {
 
     if (lurch != NULL) {
         if (purple_plugin_load (lurch)) {
-            printf ("Successfully loaded OMEMO support.\n");
+            g_debug ("Successfully loaded OMEMO support.\n");
         }
         else {
-            printf ("Error initializing OMEMO support.\n");
+            g_debug ("Error initializing OMEMO support.\n");
         }
     }
     else {
-        printf ("Error: could not load OMEMO plugin.\n");
+        g_warning ("Error: could not load OMEMO plugin.\n");
     }
 }
 

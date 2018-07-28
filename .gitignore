@@ -1,0 +1,12 @@
+# Ignore build and lib
+build
+lib/*
+etc/account/*
+etc/commands/*
+etc/*.conf
+
+# Ignore any executables
+bin/*
+
+# Fuck this thing
+.DS_Store

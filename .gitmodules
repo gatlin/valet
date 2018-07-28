@@ -1,0 +1,3 @@
+[submodule "thirdparty/lurch"]
+	path = thirdparty/lurch
+	url = https://github.com/gkdr/lurch

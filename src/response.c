@@ -34,7 +34,6 @@ valet_command_free (Command *command) {
     if (NULL != command->args) {
         g_strfreev (command->args);
     }
-    g_spawn_close_pid (command->pid);
     g_free (command);
 }
 
@@ -45,14 +44,14 @@ static gboolean
 reply (GIOChannel *channel, GIOCondition cond, gpointer data) {
     GIOStatus status;
     GError *error;
-    Command *command;
+    PurpleConvIm *im;
     char *buffer;
     gsize length, term_pos;
     gboolean more_data;
 
     more_data = TRUE;
     error = NULL;
-    command = data;
+    im = data;
     status = g_io_channel_read_line (channel, &buffer, &length, &term_pos,
                                      &error);
 
@@ -64,14 +63,13 @@ reply (GIOChannel *channel, GIOCondition cond, gpointer data) {
     if (G_IO_STATUS_NORMAL == status) {
         /* Strip the trailing newline */
         buffer[strcspn (buffer, "\n")] = 0;
-        purple_conv_im_send (command->im, buffer);
+        purple_conv_im_send (im, buffer);
         free (buffer);
     }
 
     else { /* ERROR, EOF */
         more_data = FALSE;
         g_io_channel_shutdown (channel, TRUE, NULL);
-        valet_command_free (command);
     }
 
     return more_data;
@@ -82,13 +80,29 @@ reply (GIOChannel *channel, GIOCondition cond, gpointer data) {
  */
 void
 create_response_channels (Command *command) {
-    GIOChannel *out_channel;
+    GIOChannel *out_channel, *err_channel;
 
     out_channel = g_io_channel_unix_new (command->child_stdout);
+    err_channel = g_io_channel_unix_new (command->child_stderr);
 
     g_io_add_watch_full (out_channel, G_PRIORITY_DEFAULT,
                          G_IO_IN | G_IO_HUP, reply,
-                         command, NULL);
+                         command->im, NULL);
+
+    g_io_add_watch_full (err_channel, G_PRIORITY_DEFAULT,
+                         G_IO_IN | G_IO_HUP, reply,
+                         command->im, NULL);
+}
+
+/**
+ * Called when the command process completes.
+ */
+void
+command_process_watch (GPid pid, int status, gpointer data) {
+    g_debug ("Command process %" G_PID_FORMAT " exited %s\n", pid,
+             g_spawn_check_exit_status (status, NULL)
+             ? "normally" : "abnormally");
+    g_spawn_close_pid (pid);
 }
 
 /**
@@ -97,15 +111,18 @@ create_response_channels (Command *command) {
  */
 void
 spawn_command (char *buffer, PurpleConvIm *im, char *commands_path) {
-    GError *error = NULL;
     Command *command;
+    GError *error;
 
+    error = NULL;
     command = valet_command_new (buffer, im);
 
     /* Spawn a new process */
     g_spawn_async_with_pipes (commands_path,
                               command->args,
-                              NULL, G_SPAWN_DEFAULT,
+                              NULL,
+                              //G_SPAWN_DEFAULT,
+                              G_SPAWN_DO_NOT_REAP_CHILD,
                               NULL, NULL,
                               &(command->pid), NULL,
                               &(command->child_stdout),
@@ -115,6 +132,7 @@ spawn_command (char *buffer, PurpleConvIm *im, char *commands_path) {
     /* Did GLib tell us something went wrong? */
     if (NULL != error) {
         g_warning ("Spawning child failed: %s\n", error->message);
+        purple_conv_im_send (command->im, "I do not recognize this command.");
         g_error_free (error);
         valet_command_free (command);
         return;
@@ -122,13 +140,17 @@ spawn_command (char *buffer, PurpleConvIm *im, char *commands_path) {
 
     /* Did GLib lie? */
     if (-1 == command->child_stdout || -1 == command->child_stderr) {
-        g_warning ("Error capturing command output.\n");
+        g_warning ("Error capturing child process output.\n");
         valet_command_free (command);
         return;
     }
 
     /* Okay we've started a process let's do it. */
     create_response_channels (command);
+    g_child_watch_add (command->pid, command_process_watch, NULL);
+
+    /* */
+    valet_command_free (command);
 }
 
 /**
@@ -153,9 +175,9 @@ ensure_conversation (PurpleConversation *conv,
  * before spawning the command.
  */
 void
-received_im(PurpleAccount *account, char *sender, char *buffer,
-            PurpleConversation *conv, PurpleMessageFlags flags,
-            void *data)
+received_im (PurpleAccount *account, char *sender, char *buffer,
+             PurpleConversation *conv, PurpleMessageFlags flags,
+             void *data)
 {
     PurpleBuddy *buddy;
     PurpleConvIm *im;

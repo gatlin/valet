@@ -26,10 +26,13 @@ Then you run
     $> make
     $> bin/valet
     
+    
 Finally - and this is where it gets 🔥 - run 
 
     $> bin/valet
-    
+
+Put executables in `etc/commands` and when you IM your valet the command and its arguments it will reply with the output.
+
 license
 ---
 

@@ -13,7 +13,8 @@ char *config_path;
 
 GOptionEntry options[] = {
     { "config", 'c', 0,
-      G_OPTION_ARG_STRING, &config_path, "Configuration file", NULL }
+      G_OPTION_ARG_STRING, &config_path,
+      "Location of configuration file", NULL }
 };
 
 int

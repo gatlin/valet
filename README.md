@@ -28,7 +28,7 @@ On Ubuntu and other Debian systems:
 ### Build lurch
 
 Valet relies on [lurch][lurch] for [OMEMO][omemo] encryption, and so it has been
-added as a sub-module.
+added as a sub-module. For our purposes you can run the following:
 
     $> git submodule update --init --recursive
     $> cd thirdparty/lurch
@@ -65,7 +65,22 @@ to have access to.
 access to the commands.**
 
 `libpurpledata` is where libpurple should store its data.
-`lurch` is the location of the `lurch` plugin you built. It should be correct by default.
+`lurch` is the location of the `lurch` plugin you built. It should be correct by
+default.
+
+Usage
+---
+
+```
+Usage:
+  valet [OPTION?] - a helpful xmpp bot
+
+Help Options:
+  -h, --help       Show help options
+
+Application Options:
+  -c, --config     Location of configuration file
+```
 
 license
 ---

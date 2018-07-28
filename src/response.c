@@ -149,7 +149,7 @@ spawn_command (char *buffer, PurpleConvIm *im, char *commands_path) {
     create_response_channels (command);
     g_child_watch_add (command->pid, command_process_watch, NULL);
 
-    /* */
+    /* Cool */
     valet_command_free (command);
 }
 

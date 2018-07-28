@@ -8,11 +8,22 @@
 #include "config.h"
 #include "chat.h"
 
+/* Acceptable command line options */
+char *config_path;
+
+GOptionEntry options[] = {
+    { "config", 'c', 0,
+      G_OPTION_ARG_STRING, &config_path, "Configuration file", NULL }
+};
 
 int
 main (int argc, char *argv[]) {
     Config *config;
+    GError *error;
     GMainLoop *loop = g_main_loop_new (NULL, FALSE);
+    GOptionContext *context;
+
+    error = NULL;
 
 #ifndef _WIN32
     /* libpurple's built-in DNS resolution forks processes to perform
@@ -23,7 +34,20 @@ main (int argc, char *argv[]) {
     signal (SIGCHLD, SIG_IGN);
 #endif
 
-    config = get_config (NULL);
+    /* Parse options */
+    context = g_option_context_new ("- a helpful xmpp bot");
+    g_option_context_add_main_entries (context, options, NULL);
+    if (!g_option_context_parse (context, &argc, &argv, &error)) {
+        fprintf (stderr, "Error parsing arguments: %s\n", error->message);
+        g_error_free (error);
+        error = NULL;
+    }
+
+    if (NULL == config_path) {
+        config_path = DEFAULT_CONFIG_PATH;
+    }
+
+    config = get_config (config_path, &error);
     if (NULL == config) {
         fprintf (stderr, "Error: cannot find configuration file.\n");
         return -1;

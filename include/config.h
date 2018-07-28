@@ -11,6 +11,6 @@ typedef struct {
     char *commands_path; /* Path where commands are located */
 } Config;
 
-Config *get_config (char *);
+Config *get_config (char *, GError **);
 
 #endif /* __VALET_CONFIG_H */

@@ -8,19 +8,13 @@
 #include "defines.h"
 
 Config *
-get_config (char *custom_config_path) {
+get_config (char *config_path, GError **caller_error) {
     Config *config;
     GKeyFile *keyfile;
     GKeyFileFlags flags;
-    GError *error = NULL;
-    char *config_path;
+    GError *error;
 
-    if (NULL == custom_config_path) {
-        config_path = DEFAULT_CONFIG_PATH;
-    }
-    else {
-        config_path = custom_config_path;
-    }
+    error = NULL;
 
     keyfile = g_key_file_new ();
     flags = G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS;
@@ -29,8 +23,7 @@ get_config (char *custom_config_path) {
                                     config_path,
                                     flags,
                                     &error)) {
-        g_error("%s\n",error->message);
-        g_error_free (error);
+        g_propagate_error (caller_error, error);
         return NULL;
     }
 

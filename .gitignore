@@ -8,5 +8,8 @@ valet.conf
 # Ignore any executables
 bin/*
 
+# allow the folder itself to exist
+!bin/.gitkeep
+
 # Fuck this thing
 .DS_Store

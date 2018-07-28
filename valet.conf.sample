@@ -1,0 +1,9 @@
+[credentials]
+username=USER@SERVER.TLD
+password=ourlittlesecret
+
+[valet]
+# paths can be relative or absolute
+commands=path/to/commands
+libpurpledata=purpledata/
+lurch=path/to/lurch/plugin.so

@@ -98,14 +98,14 @@ create_response_channels (Command *command) {
  * Commands are defined as CMD_PATH in defines.h
  */
 void
-spawn_command (char *buffer, PurpleConvIm *im) {
+spawn_command (char *buffer, PurpleConvIm *im, char *commands_path) {
     GError *error = NULL;
     Command *command;
 
     command = valet_command_new (buffer, im);
 
     /* Spawn a new process */
-    g_spawn_async_with_pipes (CMD_PATH,
+    g_spawn_async_with_pipes (commands_path,
                               command->args,
                               NULL, G_SPAWN_DEFAULT,
                               NULL, NULL,
@@ -161,7 +161,9 @@ received_im(PurpleAccount *account, char *sender, char *buffer,
 {
     PurpleBuddy *buddy;
     PurpleConvIm *im;
+    char *commands_path;
 
+    commands_path = data;
     conv = ensure_conversation (conv, account, sender);
     im = purple_conversation_get_im_data (conv);
     if (NULL == im) {
@@ -174,5 +176,5 @@ received_im(PurpleAccount *account, char *sender, char *buffer,
         return;
     }
 
-    spawn_command (buffer, im);
+    spawn_command (buffer, im, commands_path);
 }

@@ -11,7 +11,7 @@
 
 int
 main (int argc, char *argv[]) {
-    Credentials *credentials;
+    Config *config;
     GMainLoop *loop = g_main_loop_new (NULL, FALSE);
 
 #ifndef _WIN32
@@ -23,13 +23,13 @@ main (int argc, char *argv[]) {
     signal (SIGCHLD, SIG_IGN);
 #endif
 
-    credentials = get_account_credentials ();
-    if (NULL == credentials) {
+    config = get_config (NULL);
+    if (NULL == config) {
         fprintf (stderr, "Error: cannot find configuration file.\n");
         return -1;
     }
 
-    initialize_libpurple (credentials);
+    initialize_libpurple (config);
     g_main_loop_run (loop);
     purple_plugins_save_loaded (PLUGIN_SAVE_PREF);
 

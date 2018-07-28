@@ -7,7 +7,8 @@
 #include "chat.h"
 #include "response.h"
 
-/*** This code stolen shamelessly from the libpurple example `nullclient` ***/
+/*** The first part of this code stolen shamelessly from the libpurple example
+     `nullclient` ***/
 
 #define PURPLE_GLIB_READ_COND  (G_IO_IN | G_IO_HUP | G_IO_ERR)
 #define PURPLE_GLIB_WRITE_COND (G_IO_OUT | G_IO_HUP | G_IO_ERR | G_IO_NVAL)
@@ -162,9 +163,9 @@ static PurpleCoreUiOps null_core_uiops = {
 };
 
 static void
-init_libpurple (void) {
+init_libpurple (char *purple_data_path) {
     /* Set a custom user directory (optional) */
-    purple_util_set_user_dir (CUSTOM_USER_DIRECTORY);
+    purple_util_set_user_dir (purple_data_path);
 
     /* We do not want any debugging for now to keep the noise to a minimum. */
     purple_debug_set_enabled (FALSE);
@@ -184,7 +185,7 @@ init_libpurple (void) {
     /* Set path to search for plugins. The core (libpurple) takes care of loading the
      * core-plugins, which includes the protocol-plugins. So it is not essential to add
      * any path here, but it might be desired, especially for ui-specific plugins. */
-    purple_plugins_add_search_path (CUSTOM_PLUGIN_PATH);
+    /* purple_plugins_add_search_path (CUSTOM_PLUGIN_PATH); */
 
     /* Now that all the essential stuff has been set, let's try to init the core. It's
      * necessary to provide a non-NULL name for the current ui to the core. This name
@@ -224,7 +225,7 @@ signed_on(PurpleConnection *gc, gpointer null) {
 }
 
 static void
-connect_to_signals_for_demonstration_purposes_only (void) {
+connect_to_signals (char *commands_path) {
     static int signed_on_handle;
     static int received_im_msg_handle;
     /*    static int conversation_created_handle; */
@@ -234,16 +235,15 @@ connect_to_signals_for_demonstration_purposes_only (void) {
 
     purple_signal_connect (purple_conversations_get_handle (),
                            "received-im-msg", &received_im_msg_handle,
-                           PURPLE_CALLBACK(received_im), NULL);
+                           PURPLE_CALLBACK(received_im), commands_path);
 }
 
 /**
  * Initializes the `lurch` OMEMO plugin.
  */
 void
-initialize_omemo (void) {
-    PurplePlugin *lurch = purple_plugin_probe
-        ( CUSTOM_PLUGIN_PATH "/lurch.so" );
+initialize_omemo (char *lurch_path) {
+    PurplePlugin *lurch = purple_plugin_probe (lurch_path);
 
     if (lurch != NULL) {
         if (purple_plugin_load (lurch)) {
@@ -262,22 +262,22 @@ initialize_omemo (void) {
  * Authenticate with the server and begin listening for messages.
  */
 void
-initialize_libpurple (Credentials *credentials) {
+initialize_libpurple (Config *config) {
     PurpleAccount *account;
     PurpleSavedStatus *status;
 
-    init_libpurple ();
+    init_libpurple (config->purple_data);
 
     /* Authenticate with the server */
-    account = purple_account_new (credentials->username, "prpl-jabber");
-    purple_account_set_password (account, credentials->password);
+    account = purple_account_new (config->username, "prpl-jabber");
+    purple_account_set_password (account, config->password);
     purple_account_set_enabled (account, UI_ID, TRUE);
 
     /* Set our status */
     status = purple_savedstatus_new (NULL, PURPLE_STATUS_AVAILABLE);
     purple_savedstatus_activate (status);
 
-    connect_to_signals_for_demonstration_purposes_only ();
+    connect_to_signals (config->commands_path);
 
-    initialize_omemo ();
+    initialize_omemo (config->lurch_path);
 }

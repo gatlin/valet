@@ -16,6 +16,6 @@
 #include "defines.h"
 
 void
-initialize_libpurple (Credentials *);
+initialize_libpurple (Config *);
 
 #endif /* __VALET_CHAT_H */

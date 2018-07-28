@@ -3,7 +3,7 @@ build
 lib/*
 etc/account/*
 etc/commands/*
-etc/*.conf
+valet.conf
 
 # Ignore any executables
 bin/*

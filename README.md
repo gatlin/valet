@@ -1,39 +1,56 @@
 Valet
 ===
 
-A helper bot inspired by [https://github.com/mhcerri/Autobot](https://github.com/mhcerri/Autobot). This one supports OMEMO encryption though. 
+A helpful XMPP chat bot.
 
 © 2018- Gatlin Johnson <gatlin@niltag.net>
 
-
-
-
-setup
+what
 ---
 
-Very early young software here. Create a user on your server and add the account you want to issue commands from as a buddy.
+Valet is an XMPP chat bot inspired by [autobot][autobot]. The idea is simple:
+Valet is allowed to run any executable you put in a special, configurable
+directory.
 
-Fill out a config file in `etc/figaro.conf` like so:
+When you send Valet a message it will interpret the first word as a command and
+pass the rest as arguments.
+
+Details
+---
+
+Valet uses [libpurple][libpurple] and the [lurch][lurch] plugin internally.
+
+Configuration
+---
+
+A sample config file has been provided, but basically it looks like this:
 
 ```
 [credentials]
-username=user@server.TLD
+username=user@server.tld
 password=ourlittlesecret
+
+[commands]
+dir=/opt/valet/commands
+
+[misc]
+valetdata=/opt/valet/data
+# the location of the OMEMO plugin for libpurple
+lurchdir=etc/plugins
 ```
 
-Then you run
+The credentials should be straightforward. The command dir is where you put any
+(and only) those executable files you want Valet to be able to run.
 
-    $> make
-    $> bin/valet
-    
-    
-Finally - and this is where it gets 🔥 - run 
-
-    $> bin/valet
-
-Put executables in `etc/commands` and when you IM your valet the command and its arguments it will reply with the output.
+**It is strongly recommended that you run Valet as a special user and clamp down
+access to the commands.**
 
 license
 ---
 
 gplv3 or later you leeches
+
+[libpurple]: https://developer.pidgin.im/wiki/WhatIsLibpurple
+[autobot]: https://github.com/mhcerri/Autobot
+[omemo]: https://conversations.im/omemo/
+[lurch]: https://github.com/gkdr/lurch

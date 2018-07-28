@@ -4,10 +4,13 @@
 #include <glib.h>
 
 typedef struct {
-    gchar *username;
-    gchar *password;
-} Credentials;
+    char *username;
+    char *password;
+    char *purple_data; /* Path to store purple account data */
+    char *lurch_path; /* Location of the lurch.so file */
+    char *commands_path; /* Path where commands are located */
+} Config;
 
-Credentials *get_account_credentials ();
+Config *get_config (char *);
 
 #endif /* __VALET_CONFIG_H */

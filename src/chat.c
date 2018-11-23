@@ -261,22 +261,22 @@ initialize_omemo (char *lurch_path) {
  * Authenticate with the server and begin listening for messages.
  */
 void
-initialize_libpurple (Config *config) {
+initialize_libpurple (Context *context) {
     PurpleAccount *account;
     PurpleSavedStatus *status;
 
-    init_libpurple (config->purple_data);
+    init_libpurple (context->purple_data);
 
     /* Authenticate with the server */
-    account = purple_account_new (config->username, "prpl-jabber");
-    purple_account_set_password (account, config->password);
+    account = purple_account_new (context->username, "prpl-jabber");
+    purple_account_set_password (account, context->password);
     purple_account_set_enabled (account, UI_ID, TRUE);
 
     /* Set our status */
     status = purple_savedstatus_new (NULL, PURPLE_STATUS_AVAILABLE);
     purple_savedstatus_activate (status);
 
-    connect_to_signals (config->commands_path);
+    connect_to_signals (context->commands_path);
 
-    initialize_omemo (config->lurch_path);
+    initialize_omemo (context->lurch_path);
 }

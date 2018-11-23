@@ -5,7 +5,7 @@
 #include <glib.h>
 
 #include "defines.h"
-#include "config.h"
+#include "context.h"
 #include "chat.h"
 
 /* Acceptable command line options */
@@ -19,7 +19,7 @@ GOptionEntry options[] = {
 
 int
 main (int argc, char *argv[]) {
-    Config *config;
+    Context *valet_context;
     GError *error;
     GMainLoop *loop = g_main_loop_new (NULL, FALSE);
     GOptionContext *context;
@@ -48,12 +48,12 @@ main (int argc, char *argv[]) {
         config_path = DEFAULT_CONFIG_PATH;
     }
 
-    config = get_config (config_path, &error);
-    if (NULL == config) {
+    valet_context = get_context (config_path, &error);
+    if (NULL == valet_context) {
         g_error ("Error: cannot find configuration file.\n");
     }
 
-    initialize_libpurple (config);
+    initialize_libpurple (valet_context);
 
     g_main_loop_run (loop);
     purple_plugins_save_loaded (PLUGIN_SAVE_PREF);

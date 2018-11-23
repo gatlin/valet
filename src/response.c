@@ -39,6 +39,26 @@ valet_command_free (Command *command) {
     g_free (command);
 }
 
+/* Helper function which writes a string to a file descriptor.
+   Keeps `reply` less cluttered.
+*/
+static gboolean
+write_to_fd (int fd, const gchar *message) {
+    gsize bw;
+    GIOChannel *channel = g_io_channel_unix_new (fd);
+    GString *message_str = g_string_new (message);
+    g_string_append (message_str, "\n");
+    g_io_channel_write_chars (channel,
+                              message_str->str,
+                              message_str->len,
+                              &bw,
+                              NULL);
+    g_string_free (message_str, TRUE);
+    g_io_channel_shutdown (channel, TRUE, NULL);
+    g_io_channel_unref (channel);
+    return TRUE;
+}
+
 /**
  * Called by the GLib event loop whenever a command produces output.
  */
@@ -71,19 +91,8 @@ reply (GIOChannel *channel, GIOCondition cond, gpointer data) {
         if (g_str_has_prefix(buffer, "#get")) {
             split_response = g_regex_split_simple ("[\\s+]", buffer, 0, 0);
             /* Use the child's STDIN file handle to respond. */
-            gsize bw;
-            GString *response = g_string_new ("bar\n");
-            GIOChannel *to_child = g_io_channel_unix_new (command->child_stdin);
-            g_io_channel_write_chars (to_child,
-                                      response->str,
-                                      response->len,
-                                      &bw,
-                                      &error);
-            g_string_free (response, TRUE);
+            write_to_fd (command->child_stdin, "bar");
             g_strfreev (split_response);
-
-            g_io_channel_shutdown (to_child, TRUE, NULL);
-            g_io_channel_unref (to_child);
         }
         else {
             purple_conv_im_send (im, buffer);

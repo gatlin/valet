@@ -4,12 +4,12 @@
  * the environment.
  */
 
-#include "config.h"
+#include "context.h"
 #include "defines.h"
 
-Config *
-get_config (char *config_path, GError **caller_error) {
-    Config *config;
+Context *
+get_context (char *config_path, GError **caller_error) {
+    Context *context;
     GKeyFile *keyfile;
     GKeyFileFlags flags;
     GError *error;
@@ -27,18 +27,18 @@ get_config (char *config_path, GError **caller_error) {
         return NULL;
     }
 
-    config = g_slice_new (Config);
-    config->username = g_key_file_get_string (keyfile, "credentials",
+    context = g_slice_new (Context);
+    context->username = g_key_file_get_string (keyfile, "credentials",
                                               "username", NULL);
-    config->password = g_key_file_get_string (keyfile, "credentials",
+    context->password = g_key_file_get_string (keyfile, "credentials",
                                               "password", NULL);
 
-    config->purple_data = g_key_file_get_string (keyfile, "valet",
+    context->purple_data = g_key_file_get_string (keyfile, "valet",
                                                  "libpurpledata", NULL);
-    config->lurch_path = g_key_file_get_string (keyfile, "valet",
+    context->lurch_path = g_key_file_get_string (keyfile, "valet",
                                                 "lurch", NULL);
-    config->commands_path = g_key_file_get_string (keyfile, "valet",
+    context->commands_path = g_key_file_get_string (keyfile, "valet",
                                                    "commands", NULL);
     g_key_file_free (keyfile);
-    return config;
+    return context;
 }

@@ -12,10 +12,10 @@
 #include "purple.h"
 #include <glib.h>
 
-#include "config.h"
+#include "context.h"
 #include "defines.h"
 
 void
-initialize_libpurple (Config *);
+initialize_libpurple (Context *);
 
 #endif /* __VALET_CHAT_H */

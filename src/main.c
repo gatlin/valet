@@ -54,6 +54,7 @@ main (int argc, char *argv[]) {
     }
 
     initialize_libpurple (config);
+
     g_main_loop_run (loop);
     purple_plugins_save_loaded (PLUGIN_SAVE_PREF);
 

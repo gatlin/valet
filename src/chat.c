@@ -224,9 +224,10 @@ signed_on(PurpleConnection *gc, gpointer null) {
 }
 
 static void
-connect_to_signals (char *commands_path) {
+connect_to_signals (Context *context) {
     static int signed_on_handle;
     static int received_im_msg_handle;
+
     /*    static int conversation_created_handle; */
     purple_signal_connect (purple_connections_get_handle (),
                            "signed-on", &signed_on_handle,
@@ -234,7 +235,7 @@ connect_to_signals (char *commands_path) {
 
     purple_signal_connect (purple_conversations_get_handle (),
                            "received-im-msg", &received_im_msg_handle,
-                           PURPLE_CALLBACK(received_im), commands_path);
+                           PURPLE_CALLBACK(received_im), context);
 }
 
 /**
@@ -276,7 +277,7 @@ initialize_libpurple (Context *context) {
     status = purple_savedstatus_new (NULL, PURPLE_STATUS_AVAILABLE);
     purple_savedstatus_activate (status);
 
-    connect_to_signals (context->commands_path);
+    connect_to_signals (context);
 
     initialize_omemo (context->lurch_path);
 }

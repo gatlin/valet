@@ -4,6 +4,7 @@
  * with the output.
  */
 #include "response.h"
+#include "context.h"
 
 /**
  * The arguments, output file descriptors, and libpurple conversation comprising
@@ -16,10 +17,11 @@ typedef struct {
     int child_stderr;
     PurpleConvIm *im;
     GPid pid;
+    Context *context;
 } Command;
 
 Command *
-valet_command_new (char *args, PurpleConvIm *im) {
+valet_command_new (char *args, PurpleConvIm *im, Context *context) {
     Command *command;
     command = g_new0 (Command, 1);
     command->args = g_regex_split_simple("[\\s+]", args, 0, 0);
@@ -28,6 +30,7 @@ valet_command_new (char *args, PurpleConvIm *im) {
     command->child_stderr = -1;
     command->im = im;
     command->pid = -1;
+    command->context = context;
     return command;
 }
 
@@ -88,11 +91,22 @@ reply (GIOChannel *channel, GIOCondition cond, gpointer data) {
         /* Strip the trailing newline */
         buffer[strcspn (buffer, "\n")] = 0;
         /* If the command needs some more info, reply with it here. */
-        if (g_str_has_prefix(buffer, "#get")) {
+        if (g_str_has_prefix (buffer, "#get")) {
+            /* Split the response and treat the second part as a lookup key. */
             split_response = g_regex_split_simple ("[\\s+]", buffer, 0, 0);
-            /* Use the child's STDIN file handle to respond. */
-            write_to_fd (command->child_stdin, "bar");
-            g_strfreev (split_response);
+            gchar *val = valet_get_key (command->context, split_response[1]);
+
+            if (NULL == val) {
+                // failure
+                GString *err_str = g_string_new ("Undefined key: " );
+                g_string_append (err_str, split_response[1]);
+                purple_conv_im_send (im, err_str->str);
+                g_string_free (err_str, TRUE);
+                more_data = FALSE;
+            }
+            else {
+                write_to_fd (command->child_stdin, val);
+            }
         }
         else {
             purple_conv_im_send (im, buffer);
@@ -145,12 +159,36 @@ command_process_watch (GPid pid, int status, gpointer data) {
  * Commands are defined as CMD_PATH in defines.h
  */
 void
-spawn_command (char *buffer, PurpleConvIm *im, char *commands_path) {
+spawn_command (char *buffer, PurpleConvIm *im, Context *context) {
     Command *command;
     GError *error;
+    char *commands_path;
 
     error = NULL;
-    command = valet_command_new (buffer, im);
+    commands_path = context->commands_path;
+    command = valet_command_new (buffer, im, context);
+
+    if (!g_strcmp0 ("#get", command->args[0])) {
+        gchar *key = command->args[1];
+        gchar *val = valet_get_key (command->context, key);
+        if (NULL == val) {
+            purple_conv_im_send (im, "No value for this key.");
+        }
+        else {
+            purple_conv_im_send (im, val);
+        }
+        valet_command_free (command);
+        return;
+    }
+
+    if (!g_strcmp0 ("#set", command->args[0])) {
+        gchar *key = command->args[1];
+        gchar *val = command->args[2];
+        valet_set_key (command->context, key, val);
+        purple_conv_im_send (im, "Inserted key value pair.");
+        valet_command_free (command);
+        return;
+    }
 
     /* Spawn a new process */
     g_spawn_async_with_pipes (commands_path,
@@ -184,9 +222,6 @@ spawn_command (char *buffer, PurpleConvIm *im, char *commands_path) {
     /* Okay we've started a process let's do it. */
     create_response_channels (command);
     g_child_watch_add (command->pid, command_process_watch, command);
-
-    /* Cool */
-    //    valet_command_free (command);
 }
 
 /**
@@ -216,9 +251,9 @@ received_im (PurpleAccount *account, char *sender, char *buffer,
              void *data) {
     PurpleBuddy *buddy;
     PurpleConvIm *im;
-    char *commands_path;
+    Context *context;
 
-    commands_path = data;
+    context = data;
     conv = ensure_conversation (conv, account, sender);
     im = purple_conversation_get_im_data (conv);
     if (NULL == im) {
@@ -231,5 +266,5 @@ received_im (PurpleAccount *account, char *sender, char *buffer,
         return;
     }
 
-    spawn_command (buffer, im, commands_path);
+    spawn_command (buffer, im, context);
 }

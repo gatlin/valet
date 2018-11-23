@@ -39,6 +39,29 @@ get_context (char *config_path, GError **caller_error) {
                                                 "lurch", NULL);
     context->commands_path = g_key_file_get_string (keyfile, "valet",
                                                    "commands", NULL);
+    context->kvstore = g_hash_table_new (g_str_hash, g_str_equal);
     g_key_file_free (keyfile);
     return context;
+}
+
+gboolean
+valet_set_key (Context *context, const gchar *key, const gchar *value ) {
+    gboolean ret = FALSE;
+
+    if (g_hash_table_contains(context->kvstore, key)) {
+        ret = g_hash_table_replace (context->kvstore,
+                                    g_strdup (key),
+                                    g_strdup (value));
+    }
+    else {
+        ret = g_hash_table_insert (context->kvstore,
+                                   g_strdup (key),
+                                   g_strdup (value));
+    }
+    return ret;
+}
+
+gchar *
+valet_get_key (Context *context, const gchar *key) {
+    return g_hash_table_lookup (context->kvstore, key);
 }

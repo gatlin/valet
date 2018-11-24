@@ -62,6 +62,56 @@ write_to_fd (int fd, const gchar *message) {
     return TRUE;
 }
 
+static gboolean
+handle_set_key (Context *context, PurpleConvIm *im, char *str) {
+    if (!g_str_has_prefix (str, "#set")) {
+        return FALSE;
+    }
+    GMatchInfo *match_info;
+    GRegex *regex = g_regex_new ("^#set\\s+(\\S+)\\s+(.*)$", 0, 0, NULL);
+
+    g_regex_match (regex, str, 0, &match_info);
+
+    gchar *key = g_match_info_fetch (match_info, 1);
+    gchar *val = g_match_info_fetch (match_info, 2);
+
+    valet_set_key (context, key, val);
+    purple_conv_im_send (im, "Inserted key value pair.");
+
+    g_free (key);
+    g_free (val);
+    g_free (match_info);
+    g_regex_unref (regex);
+    return TRUE;
+}
+
+static gboolean
+handle_get_key (Context *context, PurpleConvIm *im, char *str) {
+    if (!g_str_has_prefix (str, "#get")) {
+        return FALSE;
+    }
+    GMatchInfo *match_info;
+    GRegex *regex = g_regex_new ("^#get\\s+(\\S+)", 0, 0, NULL);
+
+    g_regex_match (regex, str, 0, &match_info);
+
+    gchar *key = g_match_info_fetch (match_info, 1);
+
+    gchar *val = valet_get_key (context, key);
+    if (NULL == val) {
+        purple_conv_im_send (im, "No value found for key.");
+    }
+    else {
+        purple_conv_im_send (im, val);
+        g_free (val);
+    }
+
+    g_free (key);
+    g_free (match_info);
+    g_regex_unref (regex);
+    return TRUE;
+}
+
 /**
  * Called by the GLib event loop whenever a command produces output.
  */
@@ -168,28 +218,6 @@ spawn_command (char *buffer, PurpleConvIm *im, Context *context) {
     commands_path = context->commands_path;
     command = valet_command_new (buffer, im, context);
 
-    if (!g_strcmp0 ("#get", command->args[0])) {
-        gchar *key = command->args[1];
-        gchar *val = valet_get_key (command->context, key);
-        if (NULL == val) {
-            purple_conv_im_send (im, "No value for this key.");
-        }
-        else {
-            purple_conv_im_send (im, val);
-        }
-        valet_command_free (command);
-        return;
-    }
-
-    if (!g_strcmp0 ("#set", command->args[0])) {
-        gchar *key = command->args[1];
-        gchar *val = command->args[2];
-        valet_set_key (command->context, key, val);
-        purple_conv_im_send (im, "Inserted key value pair.");
-        valet_command_free (command);
-        return;
-    }
-
     /* Spawn a new process */
     g_spawn_async_with_pipes (commands_path,
                               command->args,
@@ -266,5 +294,15 @@ received_im (PurpleAccount *account, char *sender, char *buffer,
         return;
     }
 
-    spawn_command (buffer, im, context);
+    if (handle_set_key (context, im, buffer)) {
+        return;
+    }
+
+    else if (handle_get_key (context, im, buffer)) {
+        return;
+    }
+
+    else {
+        spawn_command (buffer, im, context);
+    }
 }

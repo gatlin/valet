@@ -32,7 +32,7 @@ added as a sub-module. For our purposes you can run the following:
 
     $> git submodule update --init --recursive
     $> cd thirdparty/lurch
-    $> cd make
+    $> make
 
 ### Build Valet
 

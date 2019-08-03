@@ -1,5 +1,5 @@
 /***
- * config.c
+ * context.c
  * This code is responsible for acquiring any and all configuration data from
  * the environment.
  */
@@ -33,6 +33,8 @@ get_context (char *config_path, GError **caller_error) {
     context->password = g_key_file_get_string (keyfile, "credentials",
                                               "password", NULL);
 
+    context->bonjour_enabled = g_key_file_get_boolean (keyfile, "valet",
+                                                       "bonjour", NULL);
     context->purple_data = g_key_file_get_string (keyfile, "valet",
                                                  "libpurpledata", NULL);
     context->lurch_path = g_key_file_get_string (keyfile, "valet",
@@ -40,6 +42,7 @@ get_context (char *config_path, GError **caller_error) {
     context->commands_path = g_key_file_get_string (keyfile, "valet",
                                                    "commands", NULL);
     context->kvstore = g_hash_table_new (g_str_hash, g_str_equal);
+
     g_key_file_free (keyfile);
     return context;
 }

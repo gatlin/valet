@@ -15,12 +15,13 @@
  * and updated during program execution by the user.
  */
 typedef struct {
-    char *username;
-    char *password;
-    char *purple_data; /* Path to store purple account data */
-    char *lurch_path; /* Location of the lurch.so file */
-    char *commands_path; /* Path where commands are located */
-    GHashTable *kvstore;
+  char *username;
+  char *password;
+  char *purple_data; /* Path to store purple account data */
+  char *lurch_path; /* Location of the lurch.so file */
+  char *commands_path; /* Path where commands are located */
+  gboolean bonjour_enabled;
+  GHashTable *kvstore;
 } Context;
 
 Context *get_context (char *, GError **);

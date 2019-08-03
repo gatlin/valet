@@ -263,21 +263,29 @@ initialize_omemo (char *lurch_path) {
  */
 void
 initialize_libpurple (Context *context) {
-    PurpleAccount *account;
-    PurpleSavedStatus *status;
+  PurpleAccount *xmpp_account, *bonjour_account;
+  PurpleSavedStatus *status;
 
-    init_libpurple (context->purple_data);
+  init_libpurple (context->purple_data);
 
-    /* Authenticate with the server */
-    account = purple_account_new (context->username, "prpl-jabber");
-    purple_account_set_password (account, context->password);
-    purple_account_set_enabled (account, UI_ID, TRUE);
+  /* Authenticate with the server */
+  xmpp_account = purple_account_new (context->username, "prpl-jabber");
+  purple_account_set_password (xmpp_account, context->password);
+  purple_account_set_enabled (xmpp_account, UI_ID, TRUE);
 
-    /* Set our status */
-    status = purple_savedstatus_new (NULL, PURPLE_STATUS_AVAILABLE);
-    purple_savedstatus_activate (status);
 
-    connect_to_signals (context);
+  if (context->bonjour_enabled) {
+    /* Also set up a bonjour user because why not */
+    bonjour_account = purple_account_new ("exodus", "prpl-bonjour");
+    purple_account_set_alias (bonjour_account, context->username);
+    purple_account_set_enabled (bonjour_account, UI_ID, TRUE);
+  }
 
-    initialize_omemo (context->lurch_path);
+  /* Set our status */
+  status = purple_savedstatus_new (NULL, PURPLE_STATUS_AVAILABLE);
+  purple_savedstatus_activate (status);
+
+  connect_to_signals (context);
+
+  initialize_omemo (context->lurch_path);
 }

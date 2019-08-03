@@ -60,7 +60,6 @@ valet_command_free (Command *command) {
   g_free (command);
 }
 
-
 static gboolean
 handle_geo (Context *context, PurpleConvIm *im, char *str) {
   if (!g_str_has_prefix (str, ("geo:"))) {
@@ -118,8 +117,9 @@ handle_get_key (Context *context, PurpleConvIm *im, char *str) {
   g_regex_match (regex, str, 0, &match_info);
 
   gchar *key = g_match_info_fetch (match_info, 1);
-
-  gchar *val = valet_get_key (context, key);
+  valet_get_key (context, key, im);
+  /*
+  gchar *val = valet_get_key (context, key, im);
   if (NULL == val) {
     purple_conv_im_send (im, "No value found for key.");
   }
@@ -127,6 +127,7 @@ handle_get_key (Context *context, PurpleConvIm *im, char *str) {
     purple_conv_im_send (im, val);
     g_free (val);
   }
+  */
 
   g_free (key);
   g_free (match_info);

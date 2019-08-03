@@ -29,11 +29,7 @@ typedef struct {
 } Context;
 
 Context *get_context (char *, GError **);
-
-gboolean
-valet_set_key (Context *, const gchar *, const gchar *);
-
-gchar *
-valet_get_key (Context *, const gchar *);
+gboolean valet_set_key (Context *, const gchar *, const gchar *);
+gboolean valet_get_key (Context *, const gchar *, gpointer);
 
 #endif /* __VALET_CONTEXT_H */

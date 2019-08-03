@@ -219,7 +219,7 @@ init_libpurple (char *purple_data_path) {
 static void
 signed_on(PurpleConnection *gc, gpointer null) {
     PurpleAccount *account = purple_connection_get_account (gc);
-    g_debug ("Account connected: %s %s\n",
+    g_message ("Account connected: %s %s",
              account->username, account->protocol_id);
 }
 
@@ -247,14 +247,14 @@ initialize_omemo (char *lurch_path) {
 
     if (lurch != NULL) {
         if (purple_plugin_load (lurch)) {
-            g_debug ("Successfully loaded OMEMO support.\n");
+            g_message ("Successfully loaded OMEMO support.");
         }
         else {
-            g_debug ("Error initializing OMEMO support.\n");
+            g_message ("Error initializing OMEMO support.");
         }
     }
     else {
-        g_warning ("Error: could not load OMEMO plugin.\n");
+        g_warning ("Error: could not load OMEMO plugin.");
     }
 }
 

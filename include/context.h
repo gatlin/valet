@@ -1,7 +1,10 @@
 #ifndef __VALET_CONTEXT_H
 #define __VALET_CONTEXT_H
 
+#include <hiredis.h>
+#include <async.h>
 #include <glib.h>
+
 #include <gmodule.h>
 
 /**
@@ -22,6 +25,7 @@ typedef struct {
   char *commands_path; /* Path where commands are located */
   gboolean bonjour_enabled;
   GHashTable *kvstore;
+  redisAsyncContext *redisCtx;
 } Context;
 
 Context *get_context (char *, GError **);

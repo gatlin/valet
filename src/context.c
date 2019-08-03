@@ -43,6 +43,21 @@ get_context (char *config_path, GError **caller_error) {
                                                    "commands", NULL);
     context->kvstore = g_hash_table_new (g_str_hash, g_str_equal);
 
+    if (g_key_file_has_group (keyfile, "redis")) {
+      gchar *redis_host = g_key_file_get_string (keyfile, "redis", "host", NULL);
+      gint redis_port = g_key_file_get_integer (keyfile, "redis", "port", NULL);
+      g_debug ("redis group exists: %s : %d", redis_host, redis_port);
+      context->redisCtx = redisAsyncConnect (redis_host, redis_port);
+      if (context->redisCtx->err) {
+        g_debug ("redis error");
+        g_printerr ("redis error: %s\n",context->redisCtx->errstr);
+        context->redisCtx = NULL;
+      }
+    }
+    else {
+      context->redisCtx = NULL;
+    }
+
     g_key_file_free (keyfile);
     return context;
 }

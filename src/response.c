@@ -60,23 +60,27 @@ valet_command_free (Command *command) {
   g_free (command);
 }
 
-/* Helper function which writes a string to a file descriptor.
-   Keeps `reply` less cluttered.
-*/
+
 static gboolean
-write_to_fd (int fd, const gchar *message) {
-  gsize bw;
-  GIOChannel *channel = g_io_channel_unix_new (fd);
-  GString *message_str = g_string_new (message);
-  g_string_append (message_str, "\n");
-  g_io_channel_write_chars (channel,
-                            message_str->str,
-                            message_str->len,
-                            &bw,
-                            NULL);
-  g_string_free (message_str, TRUE);
-  g_io_channel_shutdown (channel, TRUE, NULL);
-  g_io_channel_unref (channel);
+handle_geo (Context *context, PurpleConvIm *im, char *str) {
+  if (!g_str_has_prefix (str, ("geo:"))) {
+    return FALSE;
+  }
+
+  GMatchInfo *match_info;
+  GRegex *regex = g_regex_new ("^geo:(.+),(.+)$", 0, 0, NULL);
+
+  g_regex_match (regex, str, 0, &match_info);
+
+  gchar *lat = g_match_info_fetch (match_info, 1);
+  gchar *lng = g_match_info_fetch (match_info, 2);
+
+  g_debug ("Latitude: %s, Longitude: %s", lat, lng);
+
+  g_free (lat);
+  g_free (lng);
+  g_free (match_info);
+  g_regex_unref (regex);
   return TRUE;
 }
 
@@ -141,7 +145,6 @@ reply (GIOChannel *channel, GIOCondition cond, gpointer data) {
   char *buffer;
   gsize length, term_pos;
   gboolean more_data;
-  char **split_response;
   Command *command = data;
 
   more_data = TRUE;
@@ -159,27 +162,7 @@ reply (GIOChannel *channel, GIOCondition cond, gpointer data) {
     /* Strip the trailing newline */
     buffer[strcspn (buffer, "\n")] = 0;
     /* If the command needs some more info, reply with it here. */
-    if (g_str_has_prefix (buffer, "#get")) {
-      /* Split the response and treat the second part as a lookup key. */
-      split_response = g_regex_split_simple ("[\\s+]", buffer, 0, 0);
-      gchar *val = valet_get_key (command->context, split_response[1]);
-
-      if (NULL == val) {
-        // failure
-        GString *err_str = g_string_new ("Undefined key: " );
-        g_string_append (err_str, split_response[1]);
-        purple_conv_im_send (im, err_str->str);
-        g_string_free (err_str, TRUE);
-        more_data = FALSE;
-      }
-      else {
-        write_to_fd (command->child_stdin, val);
-      }
-    }
-    else {
-      purple_conv_im_send (im, buffer);
-    }
-
+    purple_conv_im_send (im, buffer);
     free (buffer);
   }
 
@@ -252,7 +235,6 @@ spawn_command (char *buffer, PurpleConvIm *im, Context *context) {
   /* Did GLib tell us something went wrong? */
   if (NULL != error) {
     g_warning ("Spawning child failed: %s\n", error->message);
-    purple_conv_im_send (command->im, "I do not recognize this command.");
     g_error_free (error);
     valet_command_free (command);
     return;
@@ -317,6 +299,10 @@ received_im (PurpleAccount *account, char *sender, char *buffer,
   }
 
   else if (handle_get_key (context, im, buffer)) {
+    return;
+  }
+
+  else if (handle_geo (context, im, buffer)) {
     return;
   }
 

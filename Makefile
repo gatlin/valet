@@ -11,8 +11,10 @@ SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 PURPLE_CFLAGS := $(shell pkg-config --cflags purple)
 PURPLE_LIBS := $(shell pkg-config --libs purple)
-CFLAGS := -g -Wall $(PURPLE_CFLAGS)
-LIB := -L lib $(PURPLE_LIBS)
+REDIS_CFLAGS := $(shell pkg-config --cflags hiredis)
+REDIS_LIBS := $(shell pkg-config --libs hiredis)
+CFLAGS := -g -Wall $(PURPLE_CFLAGS) $(REDIS_CFLAGS)
+LIB := -L lib $(PURPLE_LIBS) $(REDIS_LIBS)
 INC := -I include
 
 $(TARGET): $(OBJECTS)

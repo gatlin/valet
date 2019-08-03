@@ -1,7 +1,7 @@
 Valet
 ===
 
-A helpful XMPP chat bot.
+A helpful, secure XMPP chat bot.
 
 © 2018- Gatlin Johnson <gatlin@niltag.net>
 
@@ -14,6 +14,26 @@ directory.
 
 When you send Valet a message it will interpret the first word as a command and
 pass the rest as arguments.
+
+### Encryption
+
+Valet uses [lurch][lurch] to support [OMEMO][omemo] encryption for XMPP
+messages.
+Encryption is only available for **normal** XMPP chats, **not** Bonjour chats.
+
+If you want to disable OMEMO entirely for whatever reason, see the included
+sample configuration file for details.
+
+### Bonjour (Zeroconf) support
+
+Valet can also advertise itself over Bonjour chat on local networks.
+For example it might be handy to have a chat bot available to everyone in an
+office or home.
+
+Valet can operate in either XMPP or Bonjour mode separately *or** simultaneously.
+To enable it, see the sample configuration file.
+
+*Note: As stated above, OMEMO encryption is not available for Bonjour chats.*
 
 How to build Valet
 ---
@@ -35,7 +55,6 @@ added as a sub-module. For our purposes you can run the following:
     $> make
 
 ### Build Valet
-
 
     $> make
 

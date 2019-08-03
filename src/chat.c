@@ -268,11 +268,12 @@ initialize_libpurple (Context *context) {
 
   init_libpurple (context->purple_data);
 
-  /* Authenticate with the server */
-  xmpp_account = purple_account_new (context->username, "prpl-jabber");
-  purple_account_set_password (xmpp_account, context->password);
-  purple_account_set_enabled (xmpp_account, UI_ID, TRUE);
-
+  if (NULL != context->username) {
+    /* Authenticate with the server */
+    xmpp_account = purple_account_new (context->username, "prpl-jabber");
+    purple_account_set_password (xmpp_account, context->password);
+    purple_account_set_enabled (xmpp_account, UI_ID, TRUE);
+  }
 
   if (context->bonjour_enabled) {
     /* Also set up a bonjour user because why not */

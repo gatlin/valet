@@ -21,28 +21,34 @@ get_context (char *config_path, GError **caller_error) {
   keyfile = g_key_file_new ();
   flags = G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS;
 
-  if (!g_key_file_load_from_file (keyfile,
-                                  config_path,
-                                  flags,
-                                  &error)) {
+  if (!g_key_file_load_from_file
+      ( keyfile,
+        config_path,
+        flags,
+        &error )) {
     g_propagate_error (caller_error, error);
     return NULL;
   }
 
   context = g_slice_new (Context);
-  context->username = g_key_file_get_string (keyfile, "credentials",
-                                             "username", NULL);
-  context->password = g_key_file_get_string (keyfile, "credentials",
-                                             "password", NULL);
+  context->username = g_key_file_get_string
+    (keyfile, "credentials", "username", NULL);
 
-  context->bonjour_enabled = g_key_file_get_boolean (keyfile, "valet",
-                                                     "bonjour", NULL);
-  context->purple_data = g_key_file_get_string (keyfile, "valet",
-                                                "libpurpledata", NULL);
-  context->lurch_path = g_key_file_get_string (keyfile, "valet",
-                                               "lurch", NULL);
-  context->commands_path = g_key_file_get_string (keyfile, "valet",
-                                                  "commands", NULL);
+  context->password = g_key_file_get_string
+    (keyfile, "credentials", "password", NULL);
+
+  context->bonjour_enabled = g_key_file_get_boolean
+    (keyfile, "valet", "bonjour", NULL);
+
+  context->purple_data = g_key_file_get_string
+    (keyfile, "valet", "libpurpledata", NULL);
+
+  context->lurch_path = g_key_file_get_string
+    (keyfile, "valet", "lurch", NULL);
+
+  context->commands_path = g_key_file_get_string
+    (keyfile, "valet", "commands", NULL);
+
   context->kvstore = g_hash_table_new (g_str_hash, g_str_equal);
 
   if (g_key_file_has_group (keyfile, "redis")) {

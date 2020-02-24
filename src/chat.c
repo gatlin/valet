@@ -38,8 +38,8 @@ purple_glib_io_invoke (GIOChannel *source,
     purple_cond |= PURPLE_INPUT_WRITE;
   }
 
-  closure->function (closure->data, g_io_channel_unix_get_fd(source),
-                     purple_cond);
+  closure->function
+    (closure->data, g_io_channel_unix_get_fd(source), purple_cond);
 
   return TRUE;
 }
@@ -66,31 +66,32 @@ glib_input_add (gint fd, PurpleInputCondition condition,
 #else
   channel = g_io_channel_unix_new (fd);
 #endif
-  closure->result = g_io_add_watch_full (channel, G_PRIORITY_DEFAULT, cond,
-                                         purple_glib_io_invoke, closure,
-                                         purple_glib_io_destroy);
+  closure->result = g_io_add_watch_full
+    (channel, G_PRIORITY_DEFAULT, cond,
+     purple_glib_io_invoke, closure,
+     purple_glib_io_destroy);
 
   g_io_channel_unref (channel);
   return closure->result;
 }
 
-static PurpleEventLoopUiOps glib_eventloops = {
-                                               g_timeout_add,
-                                               g_source_remove,
-                                               glib_input_add,
-                                               g_source_remove,
-                                               NULL,
+static PurpleEventLoopUiOps glib_eventloops =
+  { g_timeout_add,
+    g_source_remove,
+    glib_input_add,
+    g_source_remove,
+    NULL,
 #if GLIB_CHECK_VERSION(2,14,0)
-                                               g_timeout_add_seconds,
+    g_timeout_add_seconds,
 #else
-                                               NULL,
+    NULL,
 #endif
 
-                                               /* padding */
-                                               NULL,
-                                               NULL,
-                                               NULL
-};
+    /* padding */
+    NULL,
+    NULL,
+    NULL };
+
 /*** End of the eventloop functions. ***/
 
 /**
@@ -119,27 +120,26 @@ valet_write_conv (PurpleConversation *conv,
            name, message);
 }
 
-static PurpleConversationUiOps valet_conv_uiops = {
-                                                   NULL,                      /* create_conversation  */
-                                                   NULL,                      /* destroy_conversation */
-                                                   NULL,                      /* write_chat           */
-                                                   NULL,                      /* write_im             */
-                                                   valet_write_conv,           /* write_conv           */
-                                                   NULL,                      /* chat_add_users       */
-                                                   NULL,                      /* chat_rename_user     */
-                                                   NULL,                      /* chat_remove_users    */
-                                                   NULL,                      /* chat_update_user     */
-                                                   NULL,                      /* present              */
-                                                   NULL,                      /* has_focus            */
-                                                   NULL,                      /* custom_smiley_add    */
-                                                   NULL,                      /* custom_smiley_write  */
-                                                   NULL,                      /* custom_smiley_close  */
-                                                   NULL,                      /* send_confirm         */
-                                                   NULL,
-                                                   NULL,
-                                                   NULL,
-                                                   NULL
-};
+static PurpleConversationUiOps valet_conv_uiops =
+  { NULL,                      /* create_conversation  */
+    NULL,                      /* destroy_conversation */
+    NULL,                      /* write_chat           */
+    NULL,                      /* write_im             */
+    valet_write_conv,           /* write_conv           */
+    NULL,                      /* chat_add_users       */
+    NULL,                      /* chat_rename_user     */
+    NULL,                      /* chat_remove_users    */
+    NULL,                      /* chat_update_user     */
+    NULL,                      /* present              */
+    NULL,                      /* has_focus            */
+    NULL,                      /* custom_smiley_add    */
+    NULL,                      /* custom_smiley_write  */
+    NULL,                      /* custom_smiley_close  */
+    NULL,                      /* send_confirm         */
+    NULL,
+    NULL,
+    NULL,
+    NULL };
 
 /**
  * Give libpurple hooks into our (paltry) UI.
@@ -149,18 +149,17 @@ valet_ui_init (void) {
   purple_conversations_set_ui_ops (&valet_conv_uiops);
 }
 
-static PurpleCoreUiOps null_core_uiops = {
-                                          NULL,
-                                          NULL,
-                                          valet_ui_init,
-                                          NULL,
+static PurpleCoreUiOps null_core_uiops =
+  { NULL,
+    NULL,
+    valet_ui_init,
+    NULL,
 
-                                          /* padding */
-                                          NULL,
-                                          NULL,
-                                          NULL,
-                                          NULL
-};
+    /* padding */
+    NULL,
+    NULL,
+    NULL,
+    NULL };
 
 static void
 init_libpurple (char *purple_data_path) {

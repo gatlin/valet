@@ -151,8 +151,12 @@ reply (GIOChannel *channel, GIOCondition cond, gpointer data) {
   more_data = TRUE;
   error = NULL;
   im = command->im;
-  status = g_io_channel_read_line (channel, &buffer, &length, &term_pos,
-                                   &error);
+  status = g_io_channel_read_line
+    ( channel,
+      &buffer,
+      &length,
+      &term_pos,
+      &error );
 
   if (NULL != error) {
     g_warning ("Error: %s\n", error->message);
@@ -185,13 +189,21 @@ create_response_channels (Command *command) {
   out_channel = g_io_channel_unix_new (command->child_stdout);
   err_channel = g_io_channel_unix_new (command->child_stderr);
 
-  g_io_add_watch_full (out_channel, G_PRIORITY_DEFAULT,
-                       G_IO_IN | G_IO_HUP, reply,
-                       command, NULL);
+  g_io_add_watch_full
+    ( out_channel,
+      G_PRIORITY_DEFAULT,
+      G_IO_IN | G_IO_HUP,
+      reply,
+      command,
+      NULL );
 
-  g_io_add_watch_full (err_channel, G_PRIORITY_DEFAULT,
-                       G_IO_IN | G_IO_HUP, reply,
-                       command, NULL);
+  g_io_add_watch_full
+    ( err_channel,
+      G_PRIORITY_DEFAULT,
+      G_IO_IN | G_IO_HUP,
+      reply,
+      command,
+      NULL );
 }
 
 /**
@@ -199,9 +211,11 @@ create_response_channels (Command *command) {
  */
 void
 command_process_watch (GPid pid, int status, gpointer data) {
-  g_debug ("Command process %d exited %s\n", pid,
-           g_spawn_check_exit_status (status, NULL)
-           ? "normally" : "abnormally");
+  g_debug
+    ( "Command process %d exited %s\n",
+      pid,
+      g_spawn_check_exit_status (status, NULL)
+      ? "normally" : "abnormally" );
   g_spawn_close_pid (pid);
   valet_command_free (data);
 }
@@ -221,17 +235,18 @@ spawn_command (char *buffer, PurpleConvIm *im, Context *context) {
   command = valet_command_new (buffer, im, context);
 
   /* Spawn a new process */
-  g_spawn_async_with_pipes (commands_path,
-                            command->args,
-                            NULL,
-                            //G_SPAWN_DEFAULT,
-                            G_SPAWN_DO_NOT_REAP_CHILD,
-                            NULL, NULL,
-                            &(command->pid),
-                            &(command->child_stdin),
-                            &(command->child_stdout),
-                            &(command->child_stderr),
-                            &error);
+  g_spawn_async_with_pipes
+    ( commands_path,
+      command->args,
+      NULL,
+      //G_SPAWN_DEFAULT,
+      G_SPAWN_DO_NOT_REAP_CHILD,
+      NULL, NULL,
+      &(command->pid),
+      &(command->child_stdin),
+      &(command->child_stdout),
+      &(command->child_stderr),
+      &error );
 
   /* Did GLib tell us something went wrong? */
   if (NULL != error) {
@@ -262,9 +277,10 @@ ensure_conversation (PurpleConversation *conv,
                      PurpleAccount *account,
                      char *sender) {
   if (NULL == conv) {
-    conv = purple_conversation_new (PURPLE_CONV_TYPE_IM,
-                                    account,
-                                    sender);
+    conv = purple_conversation_new
+      ( PURPLE_CONV_TYPE_IM,
+        account,
+        sender );
   }
   return conv;
 }

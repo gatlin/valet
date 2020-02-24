@@ -8,7 +8,7 @@
 #include "context.h"
 #include "chat.h"
 
-/* Acceptable command line options */
+/* Global values! */
 char *config_path;
 GMainLoop *loop;
 
@@ -31,6 +31,7 @@ redis_connect_cb (const redisAsyncContext *ac G_GNUC_UNUSED,
   }
 }
 
+/* Acceptable command line options */
 GOptionEntry options[] = {
     { "config", 'c', 0,
       G_OPTION_ARG_STRING, &config_path,
@@ -42,11 +43,11 @@ main (int argc, char *argv[]) {
   GMainContext *gmc = NULL;
   Context *valet_context;
   GError *error;
-  loop = g_main_loop_new (gmc, FALSE);
   GOptionContext *context;
   GSource *source = NULL;
   struct sigaction action;
 
+  loop = g_main_loop_new (gmc, FALSE);
   memset (&action, 0, sizeof (struct sigaction));
   action.sa_handler = handle_term;
   sigaction (SIGINT, &action, NULL);
